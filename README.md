@@ -55,7 +55,7 @@ This will take a while to run. Once complete a single `audio-loop.mp3` file will
 
 **Edit Settings**
 
-Before modifying the settings you need to create a Facebook application. If you don't already have one [create one here](). The application is used to connect to the Graph API to fetch the reactions and comments from the video. When setting up the application you only need to provide basic information.
+Before modifying the settings you need to create a Facebook application. If you don't already have one [create one here](https://developers.facebook.com/apps/). The application is used to connect to the Graph API to fetch the reactions and comments from the video. When setting up the application you only need to provide basic information.
 
 All settings are stored in the `settings.php` file. To get things working you only need to modify the settings below:
 
