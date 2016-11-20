@@ -19,6 +19,8 @@ Dependencies
 Installing
 ----------
 
+It's best to install the script on a server. [Get $10 free from Digital Ocean!](https://m.do.co/c/dde4646baa31)
+
 Clone the repo:
 
     git clone http://github.com/JamesTheHacker/facebook-live-reactions
