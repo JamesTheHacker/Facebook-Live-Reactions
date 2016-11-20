@@ -1,4 +1,7 @@
+.DS_Store
 vendor
 data/audio.mp3
 data/audio-loop.mp3
+data/.DS_Store
+images/.DS_Store
 composer.lock
