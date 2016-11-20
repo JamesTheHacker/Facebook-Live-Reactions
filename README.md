@@ -45,7 +45,7 @@ Download an audio stream from YouTube using [youtube-dl](https://github.com/rg3/
 
 Rename the download to `audio.mp3`
 
-    mv Vintage Christmas Songs from the 20's & 30's Playlist-15uF7r2rCQk.mp3 audio.mp3
+    mv "Vintage Christmas Songs from the 20's & 30's Playlist-15uF7r2rCQk.mp3" audio.mp3
 
 This will download the `.mp3` of the video. In this case it's a playlist of classic 1920's and 1930's Christmas songs.
 
