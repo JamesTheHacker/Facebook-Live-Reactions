@@ -1,7 +1,7 @@
 Facebook Live Reactions
 =======================
 
-Facebook Lie Reactions is a Linux script for creating Facebook Live Streams that contains interactive reaction counts. It also includes an interactive shoutout feature that gives live shoutouts to users who typed "shared" into the comment box.
+Facebook Live Reactions is a Linux script for creating Facebook Live Streams that contains interactive reaction counts. It also includes an interactive shoutout feature that gives live shoutouts to users who typed "shared" into the comment box.
 
 Like this ...
 
