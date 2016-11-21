@@ -61,10 +61,10 @@ Before modifying the settings you need to create a Facebook application. If you 
 
 All settings are stored in the `settings.php` file. To get things working you only need to modify the settings below:
 
-    "POST_ID"       => "",
-    "ACCESS_TOKEN"  => "",
-    "APP_ID"        => "",
-    "APP_SECRET"    => ""
+    'POST_ID'       => '',
+    'ACCESS_TOKEN'  => '',
+    'APP_ID'        => '',
+    'APP_SECRET'    => ''
 
 Once you've got your app setup get the apps access token using the [Access Token Tool](https://developers.facebook.com/tools/accesstoken/). Copy the access token into the settings. Also copy the app ID and app secret.
 
@@ -107,7 +107,7 @@ Once the stream loads in preview press "Go Live". Another box should pop up that
 
 In the URL there's a unique ID that conists of a bunch of numbers. Grab this ID and paste it into `settings.php`. Like so:
 
-    "POST_ID" => "90823402348502302894",
+    'POST_ID' => '90823402348502302894',
 
 Nearly done!
 
