@@ -55,61 +55,24 @@ function downloadProfileImage($uid, $width, $height)
 }
 
 /*
-* Adds reaction counts to an image
-*/
+ * Adds reaction counts to an image
+ */
 function drawReactionCount($image, $reactions, $fontSettings)
 {
-    // Like counter
-    $image->text(
-        $reactions['LIKE']['count'],
-        $reactions['LIKE']['xpos'],
-        $reactions['LIKE']['ypos'],
-        function ($font) use ($fontSettings) {
-            $font->file($fontSettings['FAMILY']);
-            $font->size($fontSettings['SIZE']);
-            $font->color($fontSettings['COLOR']);
-            $font->align('center');
-        }
-    );
-
-    // Love counter
-    $image->text(
-        $reactions['LOVE']['count'],
-        $reactions['LOVE']['xpos'],
-        $reactions['LOVE']['ypos'],
-        function ($font) use ($fontSettings) {
-            $font->file($fontSettings['FAMILY']);
-            $font->size($fontSettings['SIZE']);
-            $font->color($fontSettings['COLOR']);
-            $font->align('center');
-        }
-    );
-
-    // Haha counter
-    $image->text(
-        $reactions['HAHA']['count'],
-        $reactions['HAHA']['xpos'],
-        $reactions['HAHA']['ypos'],
-        function ($font) use ($fontSettings) {
-            $font->file($fontSettings['FAMILY']);
-            $font->size($fontSettings['SIZE']);
-            $font->color($fontSettings['COLOR']);
-            $font->align('center');
-        }
-    );
-
-    // Wow counter
-    $image->text(
-        $reactions['WOW']['count'],
-        $reactions['WOW']['xpos'],
-        $reactions['WOW']['ypos'],
-        function ($font) use ($fontSettings) {
-            $font->file($fontSettings['FAMILY']);
-            $font->size($fontSettings['SIZE']);
-            $font->color($fontSettings['COLOR']);
-            $font->align('center');
-        }
-    );
+    $activeReactions = ['LIKE', 'LOVE', 'HAHA', 'WOW'];
+    foreach ($activeReactions as $reaction) {
+        $image->text(
+            $reactions[$reaction]['count'],
+            $reactions[$reaction]['xpos'],
+            $reactions[$reaction]['ypos'],
+            function ($font) use ($fontSettings) {
+                $font->file($fontSettings['FAMILY']);
+                $font->size($fontSettings['SIZE']);
+                $font->color($fontSettings['COLOR']);
+                $font->align('center');
+            }
+        );
+    }
 
     return $image;
 }
