@@ -78,24 +78,6 @@ function drawReactionCount($image, $reactions, $fontSettings)
 }
 
 /*
-<<<<<<< HEAD
- * Draws the shoutout text onto the image
- */
-function drawShoutout($image, $user, $shoutout, $settings) {
-
-  $shout = "@{$user}, {$shoutout}";
-  $image->text($shout,
-               $settings['XPOS'],
-               $settings['YPOS'],
-               function($font) use ($settings) {
-                  $font->file($settings['FONT']['FAMILY']);
-                  $font->size($settings['FONT']['SIZE']);
-                  $font->color($settings['FONT']['COLOR']);
-                  $font->align('left');
-  });
-
-  return $image;
-=======
 * Draws the shoutout text onto the image
 */
 function drawShoutout($image, $user, $shoutout, $settings)
@@ -114,5 +96,4 @@ function drawShoutout($image, $user, $shoutout, $settings)
     );
 
     return $image;
->>>>>>> Lint_PSR2_Guidelines
 }
