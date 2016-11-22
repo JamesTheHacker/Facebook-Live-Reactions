@@ -46,5 +46,5 @@ return [
     ],
     'DEFAULT_SHOUTOUT_NAME' => 'John Doe',
     'DEFAULT_SHOUTOUT' => 'Thanks for your share!',
-    'COMMENT_NEEDLE' => 'share
+    'COMMENT_NEEDLE' => 'share'
 ];
