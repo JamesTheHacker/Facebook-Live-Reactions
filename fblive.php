@@ -61,19 +61,19 @@ while (true) {
     * Fetch latest comments
     */
     $comments = comments($fb, $settings['POST_ID'], $settings['ACCESS_TOKEN']);
-    
+
     /*
      * If data index isn't set user hasn't added POST_ID
      */
     if(isset($comments['data'])) {
 
         /*
-         * Loop through the comments and extract the comments that contain the word share
+         * Loop through the comments and extract the comments that contain the needle
          */
         $comments = array_filter(
             $comments['data'],
-            function ($comment) {
-                if (strpos(strtolower($comment['message']), 'share') > -1) {
+            function ($comment) use ($settings) {
+                if (strpos(strtolower($comment['message']), $settings['COMMENT_NEEDLE']) > -1) {
                     return true;
                 }
             }
@@ -86,17 +86,7 @@ while (true) {
         fwrite(STDERR, "No POST_ID set. Remeber to set it when you go live\n");;
     }
 
-    $latestShareComment = isset($comments[0]) ? $comments[0] : null;
-
-    /*
-    * Add profile image to shoutout box
-    */
-    $image->insert(
-        __DIR__ . '/images/profile.jpg',
-        'bottom-left',
-        $settings['SHOUTOUT_IMAGE']['XPOS'],
-        $settings['SHOUTOUT_IMAGE']['YPOS']
-    );
+    $latestShoutComment = isset($comments[0]) ? $comments[0] : null;
 
     /*
      * Ensure we haz some reactions.
@@ -115,14 +105,14 @@ while (true) {
     }
     
 
-    if ($latestShareComment !== null) {
+    if ($latestShoutComment !== null) {
 
        /*
         * Download user profile image from Facebook.
         * Image saves/overwrites to ./images/profile.jpeg
         */
         downloadProfileImage(
-            $latestShareComment['from']['id'],
+            $latestShoutComment['from']['id'],
             $settings['SHOUTOUT_IMAGE']['WIDTH'],
             $settings['SHOUTOUT_IMAGE']['HEIGHT']
         );
@@ -132,7 +122,7 @@ while (true) {
          */
         drawShoutout(
             $image,
-            $latestShareComment['from']['name'],
+            $latestShoutComment['from']['name'],
             $shoutouts[array_rand($shoutouts)],
             $settings['SHOUTOUT_TEXT']
         );
@@ -149,6 +139,16 @@ while (true) {
         );
     }
 
+    /*
+    * Add profile image to shoutout box
+    */
+    $image->insert(
+        __DIR__ . '/images/profile.jpg',
+        'bottom-left',
+        $settings['SHOUTOUT_IMAGE']['XPOS'],
+        $settings['SHOUTOUT_IMAGE']['YPOS']
+    );
+    
     /*
     * Save image, and move. This is required so ffmpeg doesn't stall.
     * If you directly overwrite stream.jpg ffmpeg seems to have issues.
