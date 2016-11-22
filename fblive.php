@@ -32,10 +32,15 @@ while (true) {
     array_walk(
         $reactions,
         function (&$reaction, $key) use ($settings) {
+            if (!empty($settings['REACTIONS'][$key]['XPOS'])) {
+                $xpos = $settings['REACTIONS'][$key]['XPOS'];
+            } else {
+                $xpos = calculateXPOS(array_search($key, array_keys($settings['REACTIONS'])));
+            }
             $reaction = [
-            'count' => $reaction['summary']['total_count'],
-            'xpos'  => $settings['REACTIONS'][$key]['XPOS'],
-            'ypos'  => $settings['REACTIONS'][$key]['YPOS']
+                'COUNT' => $reaction['summary']['total_count'],
+                'XPOS'  => $xpos,
+                'YPOS'  => $settings['REACTIONS'][$key]['YPOS']
             ];
         }
     );
@@ -57,16 +62,18 @@ while (true) {
         }
     );
 
-    $latestShareComment = $comments[0];
+    $latestShareComment = isset($comments[0]) ? $comments[0] : null;
 
     /*
     * Download user profile image from Facebook. Image saves/overwrites to ./images/profile.jpeg
     */
-    downloadProfileImage(
-        $latestShareComment['from']['id'],
-        $settings['SHOUTOUT_IMAGE']['WIDTH'],
-        $settings['SHOUTOUT_IMAGE']['HEIGHT']
-    );
+    if ($latestShareComment !== null) {
+        downloadProfileImage(
+            $latestShareComment['from']['id'],
+            $settings['SHOUTOUT_IMAGE']['WIDTH'],
+            $settings['SHOUTOUT_IMAGE']['HEIGHT']
+        );
+    }
 
     /*
     * Add profile image to shoutout box
@@ -81,7 +88,11 @@ while (true) {
     /*
     * Draw reactions on image
     */
-    drawReactionCount($image, $reactions, $settings['REACTIONS_FONT']);
+    drawReactionCount(
+        $image,
+        $reactions,
+        $settings['REACTIONS_FONT']
+    );
 
     /*
     * Draw shoutout on image

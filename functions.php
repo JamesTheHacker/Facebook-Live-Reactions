@@ -1,19 +1,19 @@
 <?php
 
+define('SETTINGS', include __DIR__ . '/settings.php');
+define('IMAGE_WIDTH', 640);
+
 /*
 * Gets the LIKE, LOVE, HAHA and WOW reaction counts from an object
 */
 function reactionCount($fb, $objectID, $accessToken)
 {
-    $request = $fb->request(
-        'GET',
-        "/?ids={$objectID}&fields=reactions.type(LIKE).limit(0).summary(total_count).as(LIKE), " .
-            'reactions.type(LOVE).limit(0).summary(total_count).as(LOVE), ' .
-            'reactions.type(HAHA).limit(0).summary(total_count).as(HAHA), ' .
-            'reactions.type(WOW).limit(0).summary(total_count).as(WOW)',
-        [],
-        $accessToken
-    );
+    foreach (SETTINGS['REACTIONS'] as $key => $position) {
+        $fields[] = "reactions.type({$key}).limit(0).summary(total_count).as({$key})";
+    }
+    $reactionParams = ['ids' => $objectID, 'fields' => join(',', $fields)];
+    $endpoint = '/?' . http_build_query($reactionParams);
+    $request = $fb->request('GET', $endpoint, [], $accessToken);
 
     try {
         $response = $fb->getClient()->sendRequest($request);
@@ -33,7 +33,13 @@ function reactionCount($fb, $objectID, $accessToken)
 */
 function comments($fb, $objectID, $accessToken)
 {
-    $request = $fb->request('GET', "/{$objectID}/comments?filter=stream&order=reverse_chronological", [], $accessToken);
+    $commentParams = ['filter' => 'stream', 'order' => 'reverse_chronological'];
+    $request = $fb->request(
+        'GET',
+        "/{$objectID}/comments?" . http_build_query($commentParams),
+        [],
+        $accessToken
+    );
 
     try {
         $response = $fb->getClient()->sendRequest($request);
@@ -51,20 +57,22 @@ function comments($fb, $objectID, $accessToken)
 */
 function downloadProfileImage($uid, $width, $height)
 {
-    copy("http://graph.facebook.com/{$uid}/picture?width={$width}&height={$height}", __DIR__ . '/images/profile.jpg');
+    $profileImageParams = ['width' => $width, 'height' => $height];
+    $endpoint = "http://graph.facebook.com/{$uid}/picture?" . http_build_query($profileImageParams);
+
+    copy($endpoint, __DIR__ . '/images/profile.jpg');
 }
 
 /*
- * Adds reaction counts to an image
- */
+* Adds reaction counts to an image
+*/
 function drawReactionCount($image, $reactions, $fontSettings)
 {
-    $activeReactions = ['LIKE', 'LOVE', 'HAHA', 'WOW'];
-    foreach ($activeReactions as $reaction) {
+    foreach (getActiveReactions() as $index => $reaction) {
         $image->text(
-            $reactions[$reaction]['count'],
-            $reactions[$reaction]['xpos'],
-            $reactions[$reaction]['ypos'],
+            $reactions[$reaction]['COUNT'],
+            $reactions[$reaction]['XPOS'] ?: calculateXPOS($index),
+            $reactions[$reaction]['YPOS'],
             function ($font) use ($fontSettings) {
                 $font->file($fontSettings['FAMILY']);
                 $font->size($fontSettings['SIZE']);
@@ -96,4 +104,24 @@ function drawShoutout($image, $user, $shoutout, $settings)
     );
 
     return $image;
+}
+
+/*
+* Pull the active reactions from the settings file
+*/
+function getActiveReactions()
+{
+    return array_keys(SETTINGS['REACTIONS']);
+}
+
+/*
+* Calculate default X Position of a reaction by its index number
+*/
+function calculateXPOS($index = 0)
+{
+    $imagePadding = 12;         // The padding on the edges, magic number
+    $numberOfReactions = count(getActiveReactions());
+    $gridCenter = (IMAGE_WIDTH / $numberOfReactions) - $imagePadding;
+    $textCenter = (SETTINGS['REACTIONS_FONT']['SIZE'] / 2);
+    return ($gridCenter * $index) + ($gridCenter / 2) + $textCenter;
 }
