@@ -32,9 +32,14 @@ while (true) {
     array_walk(
         $reactions,
         function (&$reaction, $key) use ($settings) {
+            if (!empty($settings['REACTIONS'][$key]['XPOS'])) {
+                $xpos = $settings['REACTIONS'][$key]['XPOS'];
+            } else {
+                $xpos = calculateXPOS(array_search($key, array_keys($settings['REACTIONS'])));
+            }
             $reaction = [
                 'COUNT' => $reaction['summary']['total_count'],
-                'XPOS'  => $settings['REACTIONS'][$key]['XPOS'],
+                'XPOS'  => $xpos,
                 'YPOS'  => $settings['REACTIONS'][$key]['YPOS']
             ];
         }

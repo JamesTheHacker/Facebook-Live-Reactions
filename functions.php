@@ -1,6 +1,7 @@
 <?php
 
 define('SETTINGS', include __DIR__ . '/settings.php');
+define('IMAGE_WIDTH', 640);
 
 /*
 * Gets the LIKE, LOVE, HAHA and WOW reaction counts from an object
@@ -67,12 +68,11 @@ function downloadProfileImage($uid, $width, $height)
 */
 function drawReactionCount($image, $reactions, $fontSettings)
 {
-    $activeReactions = array_keys(SETTINGS['REACTIONS']);
-    foreach ($activeReactions as $reaction) {
+    foreach (getActiveReactions() as $index => $reaction) {
         $image->text(
-            $reactions[$reaction]['count'],
-            $reactions[$reaction]['xpos'],
-            $reactions[$reaction]['ypos'],
+            $reactions[$reaction]['COUNT'],
+            $reactions[$reaction]['XPOS'] ?: calculateXPOS($index),
+            $reactions[$reaction]['YPOS'],
             function ($font) use ($fontSettings) {
                 $font->file($fontSettings['FAMILY']);
                 $font->size($fontSettings['SIZE']);
@@ -104,4 +104,24 @@ function drawShoutout($image, $user, $shoutout, $settings)
     );
 
     return $image;
+}
+
+/*
+* Pull the active reactions from the settings file
+*/
+function getActiveReactions()
+{
+    return array_keys(SETTINGS['REACTIONS']);
+}
+
+/*
+* Calculate default X Position of a reaction by its index number
+*/
+function calculateXPOS($index = 0)
+{
+    $numberOfReactions = count(getActiveReactions());
+    $gridCenter = (IMAGE_WIDTH / $numberOfReactions) / 2;
+    $textCenter = (SETTINGS['REACTIONS_FONT']['SIZE'] / 2);
+    $position = $index++;   // We want the index + 1
+    return ($gridCenter + $textCenter) * $position;
 }
