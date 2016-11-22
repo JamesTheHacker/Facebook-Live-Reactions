@@ -67,7 +67,7 @@ function downloadProfileImage($uid, $width, $height)
 */
 function drawReactionCount($image, $reactions, $fontSettings)
 {
-    $activeReactions = keys(SETTINGS['REACTIONS']);
+    $activeReactions = array_keys(SETTINGS['REACTIONS']);
     foreach ($activeReactions as $reaction) {
         $image->text(
             $reactions[$reaction]['count'],
