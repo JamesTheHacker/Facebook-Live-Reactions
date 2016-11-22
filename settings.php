@@ -43,5 +43,7 @@ return [
         'HEIGHT' => 65,
         'XPOS' => 14,
         'YPOS' => 10
-    ]
+    ],
+    'DEFAULT_SHOUTOUT_NAME' => 'John Doe',
+    'DEFAULT_SHOUTOUT' => 'Thanks for your share!'
 ];

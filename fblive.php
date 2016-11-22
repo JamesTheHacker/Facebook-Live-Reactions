@@ -9,6 +9,17 @@ use Intervention\Image\ImageManagerStatic as Image;
 $shoutouts = include __DIR__ . '/shoutouts.php';
 $settings = include __DIR__ . '/settings.php';
 
+/*
+ * Ensure the correct settings are set in order to run the script
+ */
+if(!isset($settings['ACCESS_TOKEN']) || empty($settings['ACCESS_TOKEN'])) {
+    die('Please provide an ACCESS_TOKEN');
+} elseif(!isset($settings['APP_ID']) || empty($settings['APP_ID'])) {
+    die('Please provide an APP_ID');
+} elseif(!isset($settings['APP_SECRET']) || empty($settings['APP_SECRET'])) {
+    die('Please provide an APP_SECRET');
+}
+
 $fb = new \Facebook\Facebook([
     'app_id' => $settings['APP_ID'],
     'app_secret' => $settings['APP_SECRET'],
@@ -16,6 +27,7 @@ $fb = new \Facebook\Facebook([
 ]);
 
 while (true) {
+
     /*
     * Create an Image instance passing in video background
     */
@@ -49,31 +61,32 @@ while (true) {
     * Fetch latest comments
     */
     $comments = comments($fb, $settings['POST_ID'], $settings['ACCESS_TOKEN']);
-
+    
     /*
-    * Loop through the comments and extract the comments that contain the word share
-    */
-    $comments = array_filter(
-        $comments['data'],
-        function ($comment) {
-            if (strpos(strtolower($comment['message']), 'share') > -1) {
-                return true;
+     * If data index isn't set user hasn't added POST_ID
+     */
+    if(isset($comments['data'])) {
+
+        /*
+         * Loop through the comments and extract the comments that contain the word share
+         */
+        $comments = array_filter(
+            $comments['data'],
+            function ($comment) {
+                if (strpos(strtolower($comment['message']), 'share') > -1) {
+                    return true;
+                }
             }
-        }
-    );
+        );
+    } else {
+
+        /*
+         * Annoy the user no POST_ID is set
+         */
+        fwrite(STDERR, "No POST_ID set. Remeber to set it when you go live\n");;
+    }
 
     $latestShareComment = isset($comments[0]) ? $comments[0] : null;
-
-    /*
-    * Download user profile image from Facebook. Image saves/overwrites to ./images/profile.jpeg
-    */
-    if ($latestShareComment !== null) {
-        downloadProfileImage(
-            $latestShareComment['from']['id'],
-            $settings['SHOUTOUT_IMAGE']['WIDTH'],
-            $settings['SHOUTOUT_IMAGE']['HEIGHT']
-        );
-    }
 
     /*
     * Add profile image to shoutout box
@@ -86,24 +99,55 @@ while (true) {
     );
 
     /*
-    * Draw reactions on image
-    */
-    drawReactionCount(
-        $image,
-        $reactions,
-        $settings['REACTIONS_FONT']
-    );
+     * Ensure we haz some reactions.
+     * If user hasn't added POST_ID no reactions will be returned from Facebook.
+     */
+    if(count($reactions) > 0) {
 
-    /*
-    * Draw shoutout on image
-    */
-    drawShoutout(
-        $image,
-        $latestShareComment['from']['name'],
-        $shoutouts[array_rand($shoutouts)],
-        $settings['SHOUTOUT_TEXT']
-    );
+        /*
+         * Draw reactions on image
+         */
+        drawReactionCount(
+            $image,
+            $reactions,
+            $settings['REACTIONS_FONT']
+        );
+    }
+    
 
+    if ($latestShareComment !== null) {
+
+       /*
+        * Download user profile image from Facebook.
+        * Image saves/overwrites to ./images/profile.jpeg
+        */
+        downloadProfileImage(
+            $latestShareComment['from']['id'],
+            $settings['SHOUTOUT_IMAGE']['WIDTH'],
+            $settings['SHOUTOUT_IMAGE']['HEIGHT']
+        );
+
+        /*
+         * Draw shoutout on image
+         */
+        drawShoutout(
+            $image,
+            $latestShareComment['from']['name'],
+            $shoutouts[array_rand($shoutouts)],
+            $settings['SHOUTOUT_TEXT']
+        );
+    } else {
+
+         /*
+          * Draw default shoutout on image
+          */
+         drawShoutout(
+            $image,
+            $settings['DEFAULT_SHOUTOUT_NAME'],
+            $settings['DEFAULT_SHOUTOUT'],
+            $settings['SHOUTOUT_TEXT']
+        );
+    }
 
     /*
     * Save image, and move. This is required so ffmpeg doesn't stall.
