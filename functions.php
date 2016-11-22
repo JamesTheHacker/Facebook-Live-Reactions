@@ -119,9 +119,9 @@ function getActiveReactions()
 */
 function calculateXPOS($index = 0)
 {
+    $imagePadding = 12;         // The padding on the edges, magic number
     $numberOfReactions = count(getActiveReactions());
-    $gridCenter = (IMAGE_WIDTH / $numberOfReactions) / 2;
+    $gridCenter = (IMAGE_WIDTH / $numberOfReactions) - $imagePadding;
     $textCenter = (SETTINGS['REACTIONS_FONT']['SIZE'] / 2);
-    $position = $index++;   // We want the index + 1
-    return ($gridCenter + $textCenter) * $position;
+    return ($gridCenter * $index) + ($gridCenter / 2) + $textCenter;
 }
