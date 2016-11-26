@@ -1,0 +1,9 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PhpCSValidationInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="CODING_STANDARD" value="PSR2" />
+    </inspection_tool>
+    <inspection_tool class="PhpUsageOfSilenceOperatorInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+  </profile>
+</component>

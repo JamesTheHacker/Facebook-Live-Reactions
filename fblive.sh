@@ -14,4 +14,4 @@ ffmpeg \
 -r 30 \
 -g 60 \
 -f flv \
-"..."
+"rtmp://rtmp-api.facebook.com:80/rtmp/363628497306464?ds=1&s_l=1&a=AaZlb97-nl-jjzX1"
