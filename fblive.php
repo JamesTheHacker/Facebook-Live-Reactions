@@ -2,114 +2,118 @@
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/functions.php';
 
-use Intervention\Image\ImageManagerStatic as Image;
+$shoutouts = require __DIR__ . '/shoutouts.php';
+$settings = require __DIR__ . '/settings.php';
 
-$shoutouts = include __DIR__ . '/shoutouts.php';
-$settings = include __DIR__ . '/settings.php';
+/*
+ * Ensure the correct settings are set in order to run the script
+ */
+if(empty($settings['ACCESS_TOKEN'])) {
+    die('Please provide an ACCESS_TOKEN');
+} elseif(empty($settings['APP_ID'])) {
+    die('Please provide an APP_ID');
+} elseif(empty($settings['APP_SECRET'])) {
+    die('Please provide an APP_SECRET');
+}
 
-$fb = new \Facebook\Facebook([
+$FBConfig = new \Facebook\Facebook([
     'app_id' => $settings['APP_ID'],
     'app_secret' => $settings['APP_SECRET'],
     'default_graph_version' => 'v2.8'
 ]);
 
+$fb = new \FBReactions\Facebook($FBConfig, $settings['ACCESS_TOKEN']);
+
 while (true) {
-    /*
-    * Create an Image instance passing in video background
-    */
-    $image = Image::make($settings['VIDEO_BG']);
+
+    $image = Intervention\Image\ImageManagerStatic::make($settings['VIDEO_BG']);
+    $renderer = new \FBReactions\Renderer($image, $settings);
 
     /*
-    * Fetch the reaction count
+    * Fetch the reactions count
     */
-    $reactions = reactionCount($fb, $settings['POST_ID'], $settings['ACCESS_TOKEN']);
-
-    /*
-    * Loop through the array modifying array elements with total reaction count, and X/Y coordinates
-    */
-    array_walk(
-        $reactions,
-        function (&$reaction, $key) use ($settings) {
-            if (!empty($settings['REACTIONS'][$key]['XPOS'])) {
-                $xpos = $settings['REACTIONS'][$key]['XPOS'];
-            } else {
-                $xpos = calculateXPOS(array_search($key, array_keys($settings['REACTIONS'])));
-            }
-            $reaction = [
-                'COUNT' => $reaction['summary']['total_count'],
-                'XPOS'  => $xpos,
-                'YPOS'  => $settings['REACTIONS'][$key]['YPOS']
-            ];
-        }
+    $reactions = $fb->reactionCount(
+        $settings['POST_ID'],
+        $settings['REACTION_SETTINGS']['REACTIONS']
     );
+
+    if(count($reactions) > 0) {
+
+        /*
+         * Draw reactions on image
+         */
+        $renderer->drawReactionCount($reactions);
+    } else {
+
+        /*
+         * No reactions found, display 0 for each
+         */
+        $renderer->drawReactionCount(
+            array_map(function() { return 0; }, $settings['REACTION_SETTINGS']['REACTIONS'])
+        );
+    }
 
     /*
     * Fetch latest comments
     */
-    $comments = comments($fb, $settings['POST_ID'], $settings['ACCESS_TOKEN']);
-
-    /*
-    * Loop through the comments and extract the comments that contain the word share
-    */
-    $comments = array_filter(
-        $comments['data'],
-        function ($comment) {
-            if (strpos(strtolower($comment['message']), 'share') > -1) {
-                return true;
-            }
-        }
+    $comments = $fb->commentsByKeyword(
+        $settings['POST_ID'],
+        $settings['KEYWORD']
     );
 
-    $latestShareComment = isset($comments[0]) ? $comments[0] : null;
+    if(!empty($settings['POST_ID']) && count($comments) > 0) {
 
-    /*
-    * Download user profile image from Facebook. Image saves/overwrites to ./images/profile.jpeg
-    */
-    if ($latestShareComment !== null) {
-        downloadProfileImage(
-            $latestShareComment['from']['id'],
-            $settings['SHOUTOUT_IMAGE']['WIDTH'],
-            $settings['SHOUTOUT_IMAGE']['HEIGHT']
+        $latestComment = $comments[0];
+
+        /*
+        * Download user profile image from Facebook. Image saves/overwrites to ./images/profile.jpeg
+        */
+        $fb->saveProfileImage(
+            $latestComment['from']['id'],
+            $settings['SHOUTOUT_SETTINGS']['PROFILE_IMAGE']['WIDTH'],
+            $settings['SHOUTOUT_SETTINGS']['PROFILE_IMAGE']['HEIGHT'],
+            __DIR__ . '/images/profile.jpg'
+        );
+
+        /*
+         * Draw shoutout on image
+         */
+        $renderer->drawShoutout(
+            $latestComment['from']['name'],
+            $shoutouts[array_rand($shoutouts)],
+            $settings['SHOUTOUT_SETTINGS']['SHOUTOUT_TEXT']
+        );
+    } else {
+
+        /*
+         * Draw default shoutout on image
+         */
+        $renderer->drawShoutout(
+            $settings['SHOUTOUT_SETTINGS']['DEFAULT_SHOUTOUT_NAME'],
+            $settings['SHOUTOUT_SETTINGS']['DEFAULT_SHOUTOUT'],
+            $settings['SHOUTOUT_SETTINGS']['SHOUTOUT_TEXT']
         );
     }
 
     /*
     * Add profile image to shoutout box
     */
-    $image->insert(
+    $renderer->drawProfileImage(
         __DIR__ . '/images/profile.jpg',
-        'bottom-left',
-        $settings['SHOUTOUT_IMAGE']['XPOS'],
-        $settings['SHOUTOUT_IMAGE']['YPOS']
+        $settings['SHOUTOUT_SETTINGS']['PROFILE_IMAGE']['XPOS'],
+        $settings['SHOUTOUT_SETTINGS']['PROFILE_IMAGE']['YPOS']
     );
-
-    /*
-    * Draw reactions on image
-    */
-    drawReactionCount(
-        $image,
-        $reactions,
-        $settings['REACTIONS_FONT']
-    );
-
-    /*
-    * Draw shoutout on image
-    */
-    drawShoutout(
-        $image,
-        $latestShareComment['from']['name'],
-        $shoutouts[array_rand($shoutouts)],
-        $settings['SHOUTOUT_TEXT']
-    );
-
-
+    
     /*
     * Save image, and move. This is required so ffmpeg doesn't stall.
     * If you directly overwrite stream.jpg ffmpeg seems to have issues.
     */
     $image->save('images/stream.tmp.jpg');
     system('mv images/stream.tmp.jpg images/stream.jpg');
-    sleep(5);
+
+    /*
+     * Pause for x number of seconds
+     */
+    sleep($settings['FRAME_RATE']);
 }
