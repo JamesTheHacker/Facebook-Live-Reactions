@@ -2,12 +2,11 @@
     "require": {
         "facebook/graph-sdk": "^5.4",
         "intervention/image": "^2.3",
-        "intervention/image": "^2.3",
+        "intervention/image": "^2.3"
     },
     "autoload": {
         "psr-4": {
             "FBReactions\\": "src/"
         }
     }
-
 }
