@@ -1,4 +1,5 @@
 .DS_Store
+.idea
 vendor
 data/audio.mp3
 data/audio-loop.mp3
